@@ -1,6 +1,6 @@
 {
   "name": "logforge",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Investigate runtime failures with LogForge logs and metrics; instrument JavaScript, TypeScript and Python features, inspect source-linked .logforge reports, fix and rerun checks.",
   "author": {
     "name": "17811365 Canada Incorporated",

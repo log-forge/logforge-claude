@@ -1,6 +1,6 @@
 # Hosted LogForge service processing
 
-LogForge is provided by **17811365 Canada Incorporated**. The public plugin connects to `https://usage.logforge.dev/mcp` using an account and OAuth. This service processing is distinct from the optional aggregate usage reporting described in [usage privacy](usage-privacy.md).
+LogForge is provided by **17811365 Canada Incorporated**. The public plugin connects to `https://usage.logforge.dev/mcp` using an account and OAuth. This service processing is distinct from the separately controllable aggregate usage reporting described in [usage privacy](usage-privacy.md).
 
 The service stores your chosen username, account identifier, password hash, sessions (which may include network addresses and user-agent details), OAuth client registrations and grants, and connection names, identifiers, credential hashes, expiration, revocation, and last-seen times. The username signup flow creates an internal placeholder email; it does not verify an email address and currently has no email password recovery. Keep your password in a password manager. Account and connection records remain until deletion is requested and verified through adan@logforge.dev; operational backups may retain earlier records until their backup is removed. There is currently no automatic backup retention deadline.
 
@@ -12,4 +12,4 @@ HTTPS processing necessarily handles source network addresses. The gateway keeps
 
 Stop or revoke a relay to prevent new reads; an in-flight response may already have reached its requester. Unshare a project to stop future report access. Revocation does not erase results already received by the requesting client. Contact adan@logforge.dev for account/data deletion or support, providing your username or connection identifier, never passwords, API keys, relay tokens, or unredacted diagnostic payloads.
 
-Optional publisher reporting remains off without explicit consent. Disabling it stops aggregate analytics; it does not disable the service processing required for a requested hosted query. Reporting identities and distribution labels are not verified Anthropic installation receipts.
+Local publisher aggregate reporting defaults to ON in Claude plugin 0.2.0 and retains explicit saved disables; its persistent off switch is described in usage privacy. Disabling that reporter does not disable service processing required for a requested hosted query. Hosted operational metrics are a separate data flow with the controls and retention documented in the published service privacy notice. Neither local reporting identities nor hosted account/tool metrics are marketplace installation receipts.

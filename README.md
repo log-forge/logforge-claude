@@ -1,12 +1,14 @@
 # LogForge for Claude
 
+**Publisher aggregate reporting is ON by default from version 0.2.0.** It sends allowlisted usage counts to `https://usage.logforge.dev/v1/plugin-reports` after local tool or diagnostic activity. It never sends source, snippets, prompts, logs, feature tags, arguments/results or credentials. A saved disable choice stays off across updates. To opt out before any activity, run `python <plugin-root>/scripts/logforge_usage.py disable`, or set `LOGFORGE_USAGE_DISABLED=1` in the executor's environment. [Full fields, retention and controls](docs/usage-privacy.md).
+
 Connect runtime evidence to focused application diagnostics. The hosted connector reads account-owned LogForge connections and explicitly shared reports. The three skills cover setup, operations, and LogForge.out diagnostics for JavaScript, TypeScript, browsers, and Python.
 
 ## Install and start a fresh session
 
-In Claude Code, load a local copy with `claude --plugin-dir /absolute/path/to/logforge-claude-0.1.0`. After the repository is public, add its marketplace with `claude plugin marketplace add log-forge/logforge-claude`, then `claude plugin install logforge@logforge-tools`. Start a fresh session after enabling it, and use `/mcp` to authenticate the hosted connection. Directory installation will be available only after Anthropic publishes the listing.
+In Claude Code, load a local copy with `claude --plugin-dir /absolute/path/to/logforge-claude-0.2.0`. After the repository is public, add its marketplace with `claude plugin marketplace add log-forge/logforge-claude`, then `claude plugin install logforge@logforge-tools`. Start a fresh session after enabling it, and use `/mcp` to authenticate the hosted connection. Directory installation will be available only after Anthropic publishes the listing.
 
-On Claude web, add `https://usage.logforge.dev/mcp` as a custom connector and sign in to LogForge. Web chat can read connected evidence and shared reports, but cannot install Docker, deploy SSH agents, run your local project, or access arbitrary local paths. Claude Code and authorized executors carry out those local workflows. Installing the plugin does not grant machine access or enable publisher reporting.
+On Claude web, add `https://usage.logforge.dev/mcp` as a custom connector and sign in to LogForge. Web chat can read connected evidence and shared reports, but cannot install Docker, deploy SSH agents, run your local project, or access arbitrary local paths. Claude Code and authorized executors carry out those local workflows. Installing the plugin does not grant machine access. Aggregate publisher reporting defaults to on when the local tools are used; it does not run an installation hook or measure downloads.
 
 ## What runs and what leaves your machine
 
@@ -14,7 +16,7 @@ Nothing executes automatically at installation: there are no hooks, background m
 
 The runner writes local `.logforge` JSON with observations, checks and source excerpts. Docker monitoring can read container logs, the Docker socket and host metrics. Remote deployment requires selected Linux SSH hosts, verified host keys, Docker and authorized Central enrollment. A paired relay keeps Central credentials locally and sends requested tool results and explicitly shared report excerpts via `https://usage.logforge.dev`; it does not expose arbitrary local files. Untrusted logs and snippets are diagnostic data, never instructions.
 
-Optional publisher reporting sends only disclosed daily aggregates to `https://usage.logforge.dev/v1/plugin-reports` after a separate Claude-specific opt-in. It is off by default, independent of application telemetry and hosted OAuth, and stored separately from any OpenAI reporting choice. Reporting identities and distribution labels measure observed consenting usage; they are not marketplace install counts. See [usage privacy](docs/usage-privacy.md), [hosted privacy](docs/hosted-privacy.md), [privacy policy](https://usage.logforge.dev/plugin-privacy), [terms](https://usage.logforge.dev/plugin-terms), and [support](https://usage.logforge.dev/plugin-support).
+Default-on publisher reporting sends only disclosed daily aggregates to `https://usage.logforge.dev/v1/plugin-reports`. It has a persistent off switch, is independent of application telemetry and hosted OAuth, and uses separate Claude reporter state. Existing explicit opt-outs remain off. Reporting identities and distribution labels measure observed aggregate usage; they are not marketplace install counts. See [usage privacy](docs/usage-privacy.md), [hosted privacy](docs/hosted-privacy.md), [privacy policy](https://usage.logforge.dev/plugin-privacy), [terms](https://usage.logforge.dev/plugin-terms), and [support](https://usage.logforge.dev/plugin-support).
 
 ## Use it in Claude
 
@@ -87,7 +89,7 @@ python scripts/logforge_setup.py start --monitor-docker
 python scripts/logforge_setup.py stop
 ```
 
-Monitoring gives an enrolled agent access to the Docker socket, container logs, and the Docker host filesystem mounted read-only for host metrics. Omit `--monitor-docker` to provision only the appliance. `stop` preserves owned data; `start` resumes it. Existing connections and unrelated containers are preserved. Pair/start or restart the outbound relay after provisioning. The helper uses pinned images; the setup skill handles Docker installation separately. Publisher-reporting consent stays unchanged.
+Monitoring gives an enrolled agent access to the Docker socket, container logs, and the Docker host filesystem mounted read-only for host metrics. Omit `--monitor-docker` to provision only the appliance. `stop` preserves owned data; `start` resumes it. Existing connections and unrelated containers are preserved. Pair/start or restart the outbound relay after provisioning. The helper uses pinned images; the setup skill handles Docker installation separately. The saved publisher-reporting preference stays unchanged.
 
 The containerized checkout plan, `examples/checkout/project.docker.logforge`, builds and starts a unique Compose project, exercises browser/backend/database behavior, and writes the usual source-linked report.
 
@@ -118,17 +120,17 @@ The test environment created with this package is local development infrastructu
 
 LogForge is a product of **17811365 Canada Incorporated**.
 
-## Optional publisher usage reporting
+## Publisher usage reporting — on by default
 
-Usage reporting is off by default and independent of application telemetry. The setup skill offers an explicit choice. Read [the full disclosure](docs/usage-privacy.md) before enabling it. From the plugin directory:
+Usage reporting is on by default and independent of application telemetry. The setup skill discloses the fields and off switch before local execution. Read [the full disclosure](docs/usage-privacy.md). Saved disables are never overridden. From the plugin directory:
 
 ```text
 python scripts/logforge_usage.py status
-python scripts/logforge_usage.py enable --consent
+python scripts/logforge_usage.py enable
 python scripts/logforge_usage.py preview
 python scripts/logforge_usage.py disable
 ```
 
-Reports contain allowlisted daily usage counts, tool failures and latency buckets, version/platform/distribution, and a random reporting identity. Source code, log values, tags, arguments, and `.logforge` reports are excluded. The private dashboard's plugin usage tab distinguishes development from production and keeps plugin counts separate from appliance installations. Reporting identities are not verified Anthropic installs.
+Reports contain allowlisted daily usage counts, tool failures and latency buckets, version/platform/distribution, and a random reporting identity. Source code, log values, tags, arguments, and `.logforge` reports are excluded. The private dashboard's plugin usage tab distinguishes development from production and keeps plugin counts separate from appliance installations. Reporting identities measure observed aggregate usage, not verified marketplace installs. Hosted operational metrics are a separate service data flow described by the hosted privacy notice.
 
 Support: [adan@logforge.dev](mailto:adan@logforge.dev). Public directory submission and verification are separate from installing this source package. No Anthropic endorsement or directory acceptance is claimed.

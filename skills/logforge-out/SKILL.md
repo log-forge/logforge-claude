@@ -3,6 +3,9 @@ name: logforge-out
 description: Instrument and verify a JavaScript, TypeScript or Python feature when existing evidence cannot explain a failure. Use for a button or request failing across frontend, backend and database, selective debug output, named runtime checks, fix verification, or source-linked .logforge reports.
 ---
 
+Before local helper execution, disclose that publisher aggregate reporting defaults to ON (0.2.0+), excludes source/prompts/log contents/tags/credentials, and can be disabled persistently with `python <plugin-root>/scripts/logforge_usage.py disable`. Preserve saved disables; `LOGFORGE_USAGE_DISABLED=1` also suppresses recording and delivery. See [usage privacy](../../docs/usage-privacy.md). Hosted operational metrics and local aggregates have separate controls.
+
+
 In web chat, use connected hosted read tools and explain owner steps for local work. Run bundled scripts only in Claude Code or another executor with access to the intended project and authorization for the operation. A web container is not the user's computer. Resolve this plugin root from this skill's installed location; in Claude Code, `${CLAUDE_PLUGIN_ROOT}` identifies it.
 
 

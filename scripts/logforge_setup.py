@@ -310,7 +310,7 @@ def start(monitor_docker=False, timeout=240):
             ensure_agent(state, request, ca)
             monitoring = wait_agent(state, request, timeout)
         checked = bridge.doctor(bridge.load_config())
-        return {**status(), 'connection': checked, 'monitoring_verification': monitoring, 'reconnect_mcp': True, 'publisher_usage': 'unchanged; separate consent required'}
+        return {**status(), 'connection': checked, 'monitoring_verification': monitoring, 'reconnect_mcp': True, 'publisher_usage': 'saved choice preserved; fresh aggregate reporting defaults on with a persistent off switch'}
 
 def monitor(container_key, enabled=True):
     docker_ready()

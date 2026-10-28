@@ -1,9 +1,10 @@
-"""Optional publisher usage aggregates. Never accepts application payloads or tags."""
+"""Default-on publisher usage aggregates with a persistent off switch. No application payloads or tags."""
 from __future__ import annotations
 import argparse
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 import json
+import math
 import os
 from pathlib import Path
 import secrets
@@ -15,7 +16,7 @@ import time
 import urllib.request
 from uuid import uuid4
 
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 DEFAULT_ENDPOINT = "https://usage.logforge.dev/v1/plugin-reports"
 EVENTS = frozenset({"bridge.started", "connection.succeeded", "connection.failed", "run.passed", "run.failed",
                     "language.javascript", "language.typescript", "language.python", "outputs", "checks",
@@ -79,6 +80,19 @@ def today():
     return datetime.now(timezone.utc).date().isoformat()
 
 
+def environment_disabled():
+    return os.environ.get("LOGFORGE_USAGE_DISABLED", "").strip().lower() in ("1", "true", "yes", "on")
+
+
+def fresh_settings(endpoint, environment, distribution, preference):
+    from logforge_mcp import protect_secret
+    token = secrets.token_hex(32)
+    return {"enabled": True, "instance_id": str(uuid4()), "first_activation": None,
+            "token_dpapi" if os.name == "nt" else "token": protect_secret(token) if os.name == "nt" else token,
+            "endpoint": endpoint, "environment": environment, "distribution": distribution,
+            "preference": preference, "notice_version": 2, "next_attempt": 0}
+
+
 def build_distribution():
     try:
         value = json.loads((Path(__file__).resolve().parents[1] / "distribution.json").read_text(encoding="utf-8"))["channel"]
@@ -88,7 +102,7 @@ def build_distribution():
 
 
 def enable(endpoint=DEFAULT_ENDPOINT, environment="production", distribution=None):
-    from logforge_mcp import validate_url, protect_secret
+    from logforge_mcp import validate_url
     distribution = distribution or build_distribution()
     validate_url(endpoint)
     if environment not in ("development", "production") or distribution not in ("local", "claude-directory"):
@@ -99,33 +113,37 @@ def enable(endpoint=DEFAULT_ENDPOINT, environment="production", distribution=Non
         config = settings(conn)
         # Changing destination gets a new identity: never forward old data or tokens to a new host.
         if not config or not config.get("enabled") or config.get("endpoint") != endpoint:
-            token = secrets.token_hex(32)
-            config = {"instance_id": str(uuid4()), "first_activation": None,
-                      "token_dpapi" if os.name == "nt" else "token": protect_secret(token) if os.name == "nt" else token}
+            config = fresh_settings(endpoint, environment, distribution, "enabled")
             conn.execute("DELETE FROM reports")
         config.update(enabled=True, endpoint=endpoint, environment=environment, distribution=distribution,
-                      consent_version=1, next_attempt=0)
+                      preference="enabled", notice_version=2, next_attempt=0)
         save_settings(conn, config)
     return status()
 
 
 def disable():
-    with database() as conn:
-        if conn is not None:
-            config = settings(conn)
-            config["enabled"] = False
-            save_settings(conn, config)
-            conn.execute("DELETE FROM reports")
+    # Persist the choice even before first use, without generating an identity/token.
+    with database(create=True) as conn:
+        config = settings(conn)
+        config.update(enabled=False, preference="disabled", notice_version=2)
+        save_settings(conn, config)
+        conn.execute("DELETE FROM reports")
     return status()
 
 
 def status(preview=False):
     with database() as conn:
-        if conn is None:
-            return {"enabled": False, "pending_reports": 0, "consent": "not requested"}
-        config = settings(conn)
-        rows = conn.execute("SELECT payload FROM reports WHERE revision>sent ORDER BY day").fetchall()
-        result = {k: config.get(k) for k in ("enabled", "endpoint", "environment", "distribution", "instance_id", "first_activation", "last_delivery")}
+        config = settings(conn) if conn is not None else {}
+        if not config:
+            config = {"enabled": True, "preference": "default", "notice_version": 2,
+                      "endpoint": DEFAULT_ENDPOINT, "environment": "production", "distribution": build_distribution()}
+        rows = conn.execute("SELECT payload FROM reports WHERE revision>sent ORDER BY day").fetchall() if conn is not None else []
+        result = {k: config.get(k) for k in ("enabled", "endpoint", "environment", "distribution", "instance_id", "first_activation", "last_delivery", "preference", "notice_version")}
+        result["enabled"] = config.get("enabled") is True and not environment_disabled()
+        result["environment_disabled"] = environment_disabled()
+        result["reporting_notice"] = ("Publisher aggregate reporting defaults to ON. Current setting: "
+            + ("ON" if result["enabled"] else "OFF")
+            + ". Disable persistently with: python scripts/logforge_usage.py disable. See docs/usage-privacy.md.")
         result["pending_reports"] = len(rows)
         if preview:
             result["reports"] = [json.loads(r[0]) for r in rows]
@@ -135,15 +153,25 @@ def status(preview=False):
 def record(events=None, tool=None, error=False, duration_ms=0):
     """Best effort local transaction only. Never network I/O in the diagnostic hot path."""
     try:
-        events = events or {}
-        if set(events) - EVENTS or any(type(v) is not int or not 0 <= v <= 1_000_000_000 for v in events.values()):
+        events = {} if events is None else events
+        if (not isinstance(events, dict) or set(events) - EVENTS
+                or any(type(v) is not int or not 0 <= v <= 1_000_000_000 for v in events.values())
+                or (tool is not None and not isinstance(tool, str)) or type(error) is not bool
+                or type(duration_ms) not in (int, float) or not math.isfinite(duration_ms) or duration_ms < 0
+                or (not events and tool is None) or environment_disabled()):
             return False
-        with database() as conn:
-            if conn is None:
-                return False
+        with database(create=True) as conn:
             config = settings(conn)
-            if not config.get("enabled"):
+            if not config:
+                config = fresh_settings(DEFAULT_ENDPOINT, "production", build_distribution(), "default")
+                save_settings(conn, config)
+            if config.get("enabled") is not True:
                 return False
+            if not config.get("notice_shown"):
+                print("LogForge publisher aggregate reporting defaults to ON (counts only; no source, prompts, logs or tags). "
+                      "Disable: python <plugin-root>/scripts/logforge_usage.py disable. See docs/usage-privacy.md.", file=sys.stderr)
+                config.update(notice_shown=True, notice_version=2)
+                save_settings(conn, config)
             day = today()
             if config.get("first_activation") is None:
                 config["first_activation"] = day
@@ -185,11 +213,13 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 def flush(force=False):
     """Send cumulative snapshots; acknowledged revisions survive retries without double-counting."""
     try:
+        if environment_disabled():
+            return {"sent": 0, "status": "disabled"}
         with database() as conn:
             if conn is None:
-                return {"sent": 0, "status": "disabled"}
+                return {"sent": 0, "status": "no_activity"}
             config = settings(conn)
-            if not config.get("enabled"):
+            if config.get("enabled") is not True:
                 return {"sent": 0, "status": "disabled"}
             if not force and config.get("next_attempt", 0) > time.time():
                 return {"sent": 0, "status": "scheduled"}
@@ -205,7 +235,7 @@ def flush(force=False):
         for row in rows:
             with database() as conn:
                 current = settings(conn)
-                if not current.get("enabled") or current.get("instance_id") != config["instance_id"]:
+                if environment_disabled() or current.get("enabled") is not True or current.get("instance_id") != config["instance_id"]:
                     break
             req = urllib.request.Request(endpoint, data=row[5].encode(), headers={"Authorization": "Bearer " + token, "Content-Type": "application/json"}, method="POST")
             with opener.open(req, timeout=2) as response:
@@ -295,7 +325,7 @@ def main():
     opt.add_argument("--endpoint", default=DEFAULT_ENDPOINT)
     opt.add_argument("--environment", choices=["development", "production"], default="production")
     opt.add_argument("--distribution", choices=["local", "claude-directory"], help="Override the packaged distribution label; this is not an installation receipt")
-    opt.add_argument("--consent", action="store_true", required=True, help="Confirm you reviewed docs/usage-privacy.md and want to share usage aggregates")
+    opt.add_argument("--consent", action="store_true", help="Backward-compatible acknowledgment of docs/usage-privacy.md; reporting is now on by default")
     args = parser.parse_args()
     try:
         result = enable(args.endpoint, args.environment, args.distribution) if args.command == "enable" else disable() if args.command == "disable" else flush(args.force) if args.command == "flush" else status(args.command == "preview")

@@ -10,3 +10,4 @@ sys.path.insert(0, str(ROOT / "scripts"))
 def isolate_publisher_usage(tmp_path, monkeypatch):
     # Running packaged tests must never alter the user's real usage preferences or metrics.
     monkeypatch.setenv("LOGFORGE_USAGE_STATE", str(tmp_path / "test-usage.sqlite3"))
+    monkeypatch.setenv("LOGFORGE_USAGE_DISABLED", "1")

@@ -3,6 +3,9 @@ name: logforge-ops
 description: Diagnose a running application using connected LogForge logs, metrics, inventory, alerts and scoped file reads. Use for runtime errors, slow requests, unhealthy containers or missing telemetry when deployed evidence is needed, even without a product-name mention.
 ---
 
+Before local helper execution, disclose that publisher aggregate reporting defaults to ON (0.2.0+), excludes source/prompts/log contents/tags/credentials, and can be disabled persistently with `python <plugin-root>/scripts/logforge_usage.py disable`. Preserve saved disables; `LOGFORGE_USAGE_DISABLED=1` also suppresses recording and delivery. See [usage privacy](../../docs/usage-privacy.md). Hosted operational metrics and local aggregates have separate controls.
+
+
 In web chat, use connected hosted read tools and explain owner steps for local work. Run bundled scripts only in Claude Code or another executor with access to the intended project and authorization for the operation. A web container is not the user's computer. Resolve this plugin root from this skill's installed location; in Claude Code, `${CLAUDE_PLUGIN_ROOT}` identifies it.
 
 

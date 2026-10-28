@@ -16,7 +16,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 MAX_RESPONSE = 8 * 1024 * 1024
 
 class BridgeError(Exception):
