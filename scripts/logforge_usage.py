@@ -26,6 +26,7 @@ TOOLS = frozenset({"logforge_runs_list", "logforge_run_read", "logforge_describe
                    "logforge_actions_preview", "logforge_actions_execute", "logforge_graph_get", "logforge_alert_history_search",
                    "logforge_metrics_query_range", "logforge_file_list", "logforge_file_read"})
 BUCKETS = ("under_100ms", "under_1s", "under_10s", "10s_or_more")
+_database_lock = threading.RLock()
 
 
 def state_path():
@@ -38,6 +39,16 @@ def state_path():
 
 @contextmanager
 def database(create=False):
+    # SQLite's first journal-mode transition can return BUSY before BEGIN IMMEDIATE.
+    # Serialize this process's initialization and complete transactions; SQLite
+    # still coordinates separate processes through its timeout and write lock.
+    with _database_lock:
+        with database_connection(create) as conn:
+            yield conn
+
+
+@contextmanager
+def database_connection(create=False):
     path = state_path()
     if not create and not path.is_file():
         yield None

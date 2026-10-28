@@ -6,6 +6,8 @@ Publisher aggregate reporting is on by default for fresh Claude reporter state. 
 
 The README, setup guidance, first-execution notice and privacy documentation describe the default, allowlisted fields, receiver, retention and off switch. No source, snippets, prompts, logs, feature tags, arguments/results or credentials enter aggregate reports. Local aggregates, hosted operational metrics and marketplace installation statistics remain distinct. This material data-practice update requires renewed platform review.
 
+Serialize local database initialization and transactions within each process to prevent aggregate loss when threads begin reporting simultaneously. SQLite transactions and its timeout continue to coordinate separate processes.
+
 ## 0.1.0
 
 Initial Claude adapter with hosted OAuth MCP, setup/operations/diagnostic skills, local JavaScript/TypeScript/Python tooling, source-linked reports and opt-in aggregate reporting.

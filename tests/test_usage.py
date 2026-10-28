@@ -175,6 +175,27 @@ def test_concurrent_writers_and_upgrade_preserve_totals(receiver, monkeypatch):
     assert sum(r["tools"]["logforge_logs_query"]["calls"] for r in upgraded["reports"]) == 81
 
 
+@pytest.mark.parametrize("attempt", range(3))
+def test_concurrent_default_first_use_preserves_identity_and_counts(attempt):
+    assert not usage.state_path().exists()
+    first_use = threading.Barrier(16, timeout=10)
+
+    def record_first_use(_):
+        first_use.wait()
+        return usage.record({"outputs": 1}, tool="logforge_logs_query", duration_ms=1)
+
+    with ThreadPoolExecutor(max_workers=16) as pool:
+        accepted = list(pool.map(record_first_use, range(16)))
+    assert all(accepted), f"Only {sum(accepted)}/16 first-use records accepted"
+    state = usage.status(preview=True)
+    assert len(state["reports"]) == 1
+    payload = state["reports"][0]
+    assert payload["instance_id"] == state["instance_id"]
+    assert payload["events"]["outputs"] == 16
+    assert payload["tools"]["logforge_logs_query"]["calls"] == 16
+    assert payload["revision"] == 16
+
+
 def test_bad_telemetry_state_cannot_break_mcp(monkeypatch):
     usage.state_path().write_text("not sqlite")
     assert not usage.record(tool="logforge_logs_query")
