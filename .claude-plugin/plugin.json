@@ -20,9 +20,5 @@
     "typescript",
     "javascript",
     "feature-diagnostics"
-  ],
-  "documentationUrl": "https://github.com/log-forge/logforge-claude#readme",
-  "supportUrl": "https://usage.logforge.dev/plugin-support",
-  "privacyPolicyUrl": "https://usage.logforge.dev/plugin-privacy",
-  "termsOfServiceUrl": "https://usage.logforge.dev/plugin-terms"
+  ]
 }
