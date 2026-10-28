@@ -1,0 +1,30 @@
+services:
+  app:
+    build:
+      context: ../..
+      dockerfile: examples/checkout/Dockerfile
+    ports:
+      - "127.0.0.1:38500:38500"
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "2"
+    labels:
+      dev.logforge.example: checkout
+    environment:
+      LOGFORGE_RUN_ID: "${LOGFORGE_RUN_ID:?Run this through logforge_run.py}"
+      LOGFORGE_TAGS: "${LOGFORGE_TAGS:-}"
+      LOGFORGE_LEVEL: "${LOGFORGE_LEVEL:-debug}"
+      LOGFORGE_SERVICE: backend
+      LOGFORGE_PROJECT_ROOT: /app/examples/checkout
+      # The browser runs on the host and posts to the host's loopback collector.
+      LOGFORGE_COLLECTOR_URL: "${LOGFORGE_COLLECTOR_URL:?Missing run collector}"
+      LOGFORGE_COLLECTOR_TOKEN: "${LOGFORGE_COLLECTOR_TOKEN:?Missing run credential}"

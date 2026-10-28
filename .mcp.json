@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "logforge": {
+      "type": "http",
+      "url": "https://usage.logforge.dev/mcp"
+    }
+  }
+}

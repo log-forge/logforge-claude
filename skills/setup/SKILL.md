@@ -1,0 +1,38 @@
+---
+name: setup
+description: Set up application logging and observability for a new or existing app, including Docker telemetry, remote Linux agents, first-time LogForge installation, connection repair and optional publisher reporting. Use when the user asks to add logging or monitoring to a development stack, even without naming LogForge.
+---
+
+In web chat, use connected hosted read tools and explain owner steps for local work. Run bundled scripts only in Claude Code or another executor with access to the intended project and authorization for the operation. A web container is not the user's computer. Resolve this plugin root from this skill's installed location; in Claude Code, `${CLAUDE_PLUGIN_ROOT}` identifies it.
+
+
+# Set up LogForge
+
+Resolve this installed plugin's root from this skill's location. Run bundled scripts using absolute paths. Own setup through a verified application run; users should not need to understand API keys or provision an appliance first. Keep credentials in protected local configuration outside the plugin and project.
+
+## Application logging in the development stack
+
+When the user requests logging, monitoring or diagnostics while creating an app, establish that capability alongside the first feature. Inspect the existing logger and test commands, preserve them, and add a focused feature tag plus a named check at useful boundaries. Choose local diagnostics for a simple project; provision Docker telemetry or remote collectors when the requested workflow needs them. Connect a hosted relay only for requested remote inspection.
+
+When logging is merely an optional addition to a general app-building request, briefly explain the relevant benefit and let the user choose before adding infrastructure or cloud sharing. A syntax question, formatting edit or unrelated coding task does not require telemetry setup.
+
+After the user adopts LogForge for this project, offer to record the actual commands and report location in the existing project instructions using [project integration](references/project-integration.md). This makes the workflow discoverable to future sessions in that repository. Preserve existing instructions and any later choice to remove the integration.
+
+## Hosted and desktop routing
+
+The public MCP uses OAuth and an outbound private relay. Follow [hosted connection setup](references/hosted-connection.md). In a web-only client, use linked read tools and provide owner steps for installation or instrumentation; never claim local execution. With a desktop executor, carry out the authorized workflows below, then pair/start the relay and verify the requested reads. Sharing report directories sends requested excerpts through the gateway and requires user authorization. Local diagnostics also work entirely offline through the bundled report CLI.
+
+1. Inspect the requested project, runtimes, dependency locks, existing Dockerfiles/Compose files, and intended workflow. Reuse authorization already given for installation, containerization, and monitoring. Ordinary instrumentation can use local diagnostics. For Docker-native monitoring or a requested complete local telemetry stack, take the Docker path below. Clarify only choices that materially change the requested scope.
+2. Check Python 3.10+ and the application's runtimes. Resolve missing prerequisites through the user's package manager or current official vendor instructions within the authorized task. Local report inspection uses `logforge_mcp.py reports list --project <path>` and `reports read --project <path> --run-id <id>` without Docker, an appliance, or a hosted account.
+3. Run `python <plugin-root>/scripts/logforge_setup.py status` and choose the relevant branch:
+   - **Remote agents or a fleet:** follow [remote-agent deployment](references/remote-agents.md). Resolve target access and Central reachability, prepare a scoped plan, install prerequisites, preview/apply deployment, and verify inventory plus retained application events. Local MCP versus hosted MCP does not change the need for target authorization and working network paths.
+   - **Local diagnostics:** use [logforge-out](../logforge-out/SKILL.md) to instrument, execute, and inspect a feature. No Docker or API key is required.
+   - **Existing connection:** run `logforge_mcp.py doctor` and preserve a working connection. If status shows this helper's managed appliance is stopped, run `logforge_setup.py start` to resume it and any previously enrolled agent, then retry doctor. For an existing remote instance, ask for its URL only if unavailable in authorized configuration. Guide its owner through the normal read-only-key flow using `logforge_mcp.py configure --url <MCP URL>` and its hidden local prompt. Use `--ca-file` for private CAs and keep TLS verification enabled.
+   - **No appliance, or Docker-native setup:** read [the Docker workflow](references/docker-workflow.md), install/start Docker when needed, adapt the requested application to containers, then run `logforge_setup.py start --monitor-docker` when monitoring the local Docker host is authorized. `start` alone provisions only the appliance. The helper creates its own read-only credentials and separately owned resources; no manual key creation is needed.
+4. For Docker monitoring, pair/start or restart the outbound relay after provisioning, call `logforge_describe_stack`, and locate canonical inventory keys. Enable monitoring for intended workloads through normal LogForge APIs/UI. Trigger a recognizable application event and retrieve it through LogForge using [logforge-ops](../logforge-ops/SKILL.md). A running container or healthy appliance does not prove application log retention.
+5. Use [logforge-out](../logforge-out/SKILL.md) to add one feature tag across relevant frontend/backend/database boundaries, create named checks, and execute the feature. Inspect the `.logforge` result for snippets, failures, filtered outputs, and unreached expectations; fix failures and rerun. Exercise the actual containerized path when using Docker. The bundled `examples/checkout/project.docker.logforge` demonstrates it. Execute plans only within the user's authorized task; they contain commands.
+6. Run `logforge_usage.py status`. Read [the privacy disclosure](../../docs/usage-privacy.md) before offering optional publisher reporting. Preserve an existing choice; otherwise explain the aggregate fields and ask once. Leave it off without consent. After consent, use `logforge_usage.py enable --consent`, with `--environment development` for tests. Keep the packaged distribution label. Reporting is independent of setup and never proves an Anthropic install.
+
+Completion means the requested application path passes its checks with a readable `.logforge` report. Docker monitoring additionally requires an online agent, received inventory, and a retrieved application event. Report exactly which mode and platform were tested. If installation needs license acceptance, administrator access, virtualization changes, or a restart, identify the specific owner action, complete independent work, and resume afterward. Do not promise universal compatibility based on one machine.
+
+The managed helper's `stop` stops only its owned appliance/agent and retains data; `start` resumes the same instance. Isolated tests can use `LOGFORGE_SETUP_HOME` and `LOGFORGE_MCP_CONFIG`; ordinary users should not need them. The helper refuses remote Docker contexts and replacement of existing connections. Installation does not authorize paid features, production deployment, or unrelated machine-wide changes. To disable publisher reporting, run `logforge_usage.py disable`, verify `enabled: false`, and explain that received-report deletion uses the privacy document's contact.

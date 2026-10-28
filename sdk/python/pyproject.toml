@@ -1,0 +1,12 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "logforge-out"
+version = "0.1.0"
+description = "Tagged lazy structured diagnostics for LogForge"
+requires-python = ">=3.10"
+
+[tool.setuptools]
+py-modules = ["logforge_out"]

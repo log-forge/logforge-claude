@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "kind": "project",
+  "name": "Docker checkout: browser, Node backend, Python SQLite",
+  "browser_origins": ["http://127.0.0.1:38500"],
+  "source_roots": [{"url_prefix": "http://127.0.0.1:38500/", "path": "."}],
+  "commands": [{"name": "docker-checkout", "argv": ["${PYTHON}", "docker-checkout.py"], "timeout_seconds": 600}],
+  "expect": [
+    {"name": "checkout.clicked", "tags": ["checkout", "frontend"]},
+    {"name": "checkout.received", "tags": ["checkout", "backend"]},
+    {"name": "checkout.saved", "tags": ["checkout", "database"]},
+    {"name": "checkout.database-row", "kind": "check", "tags": ["checkout", "database"]},
+    {"name": "checkout.responded", "tags": ["checkout", "backend"]},
+    {"name": "checkout.ui-success", "kind": "check", "tags": ["checkout", "frontend"]},
+    {"name": "catalog.background", "tags": ["catalog", "backend"]}
+  ]
+}

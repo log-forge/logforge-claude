@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "kind": "project",
+  "name": "Checkout: browser, Node backend, Python SQLite",
+  "browser_origins": ["http://127.0.0.1:38500"],
+  "source_roots": [{"url_prefix": "http://127.0.0.1:38500/", "path": "."}],
+  "services": [{"name": "backend", "argv": ["${NODE}", "backend.mjs"], "ready_url": "http://127.0.0.1:38500/health", "timeout_seconds": 20}],
+  "commands": [{"name": "browser-test", "argv": ["${NODE}", "test-browser.mjs"], "timeout_seconds": 120}],
+  "expect": [
+    {"name": "checkout.clicked", "tags": ["checkout", "frontend"]},
+    {"name": "checkout.received", "tags": ["checkout", "backend"]},
+    {"name": "checkout.saved", "tags": ["checkout", "database"]},
+    {"name": "checkout.database-row", "kind": "check", "tags": ["checkout", "database"]},
+    {"name": "checkout.responded", "tags": ["checkout", "backend"]},
+    {"name": "checkout.ui-success", "kind": "check", "tags": ["checkout", "frontend"]},
+    {"name": "catalog.background", "tags": ["catalog", "backend"]}
+  ]
+}

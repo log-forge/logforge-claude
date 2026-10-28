@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LogForge remote agent deployment plan v1",
+  "type": "object",
+  "required": ["schema_version", "kind", "deployment_id", "central", "targets"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"const": "1.0"}, "kind": {"const": "remote-agents"},
+    "deployment_id": {"type": "string", "format": "uuid"}, "name": {"type": "string"},
+    "central": {"type": "object", "additionalProperties": false, "required": ["url", "mtls_url"], "properties": {
+      "url": {"type": "string", "format": "uri"}, "mtls_url": {"type": "string", "format": "uri"},
+      "admin_config": {"type": "string"}, "ca_file": {"type": "string"}
+    }},
+    "targets": {"type": "array", "minItems": 1, "maxItems": 32, "items": {
+      "type": "object", "additionalProperties": false, "required": ["agent_name", "host"],
+      "properties": {
+        "agent_name": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,62}$"},
+        "host": {"type": "string"}, "username": {"type": "string"},
+        "port": {"type": "integer", "minimum": 1, "maximum": 65535},
+        "identity_file": {"type": "string"}, "known_hosts_file": {"type": "string"},
+        "extra_hosts": {"type": "object", "additionalProperties": {"type": "string"}}
+      }
+    }}
+  }
+}

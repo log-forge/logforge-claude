@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LogForge project plan v1", "type": "object",
+  "required": ["schema_version", "kind", "commands"],
+  "properties": {
+    "schema_version": {"const": "1.0"}, "kind": {"const": "project"}, "name": {"type": "string"},
+    "commands": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/command"}},
+    "services": {"type": "array", "items": {"allOf": [{"$ref": "#/$defs/command"}, {"required": ["ready_url"]}]}},
+    "expect": {"type": "array", "items": {"type": "object", "required": ["name", "tags"], "properties": {
+      "name": {"type": "string", "minLength": 1}, "kind": {"enum": ["output", "check"]},
+      "tags": {"type": "array", "items": {"type": "string"}}, "min_count": {"type": "integer", "minimum": 1}, "level": {"enum": ["debug", "info", "warn", "error"]}
+    }, "additionalProperties": false}},
+    "browser_origins": {"type": "array", "items": {"type": "string"}},
+    "source_roots": {"type": "array", "items": {"type": "object", "required": ["url_prefix", "path"], "properties": {"url_prefix": {"type": "string"}, "path": {"type": "string"}}, "additionalProperties": false}}
+  }, "additionalProperties": false,
+  "$defs": {"command": {"type": "object", "required": ["argv"], "properties": {
+    "name": {"type": "string"}, "argv": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "cwd": {"type": "string"}, "timeout_seconds": {"type": "number", "exclusiveMinimum": 0, "maximum": 3600},
+    "env": {"type": "object", "additionalProperties": {"type": "string"}}, "ready_url": {"type": "string"}
+  }, "additionalProperties": false}}
+}

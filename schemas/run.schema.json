@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "title": "LogForge run report v1", "type": "object",
+  "required": ["schema_version", "kind", "run_id", "status", "selected_tags", "events", "expectations", "commands", "summary", "coverage_note"],
+  "properties": {
+    "schema_version": {"const": "1.0"}, "kind": {"const": "run"}, "run_id": {"type": "string", "pattern": "^[A-Za-z0-9_-]+$"},
+    "status": {"enum": ["passed", "failed"]}, "selected_tags": {"type": "array", "items": {"type": "string"}},
+    "events": {"type": "array", "items": {"type": "object", "required": ["event_id", "name", "tags", "source", "kind", "data", "run_id"], "properties": {
+      "kind": {"enum": ["output", "check"]}, "tags": {"type": "array", "items": {"type": "string"}}, "source": {"type": ["object", "null"]}
+    }}},
+    "expectations": {"type": "array", "items": {"type": "object", "required": ["name", "status", "observed_count"], "properties": {"status": {"enum": ["reached", "filtered", "unreached"]}}}},
+    "commands": {"type": "array"}, "summary": {"type": "object"}, "coverage_note": {"type": "string"}
+  }
+}

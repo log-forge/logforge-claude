@@ -1,0 +1,1 @@
+{"schema_version":"1.0","kind":"project","name":"TypeScript typed diagnostics","commands":[{"name":"typescript","argv":["${NODE}","--experimental-strip-types","app.ts"],"timeout_seconds":20}],"expect":[{"name":"checkout.typescript","tags":["checkout","backend"]},{"name":"checkout.total","kind":"check","tags":["checkout","backend"]}]}

@@ -1,0 +1,9 @@
+{
+  "name": "@logforge/out",
+  "version": "0.1.0",
+  "description": "Tagged, lazy structured diagnostics for LogForge",
+  "type": "module",
+  "exports": {".": {"types": "./index.d.ts", "import": "./index.js"}},
+  "files": ["index.js", "index.d.ts"],
+  "engines": {"node": ">=18"}
+}

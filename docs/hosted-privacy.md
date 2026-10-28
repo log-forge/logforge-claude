@@ -1,0 +1,15 @@
+# Hosted LogForge service processing
+
+LogForge is provided by **17811365 Canada Incorporated**. The public plugin connects to `https://usage.logforge.dev/mcp` using an account and OAuth. This service processing is distinct from the optional aggregate usage reporting described in [usage privacy](usage-privacy.md).
+
+The service stores your chosen username, account identifier, password hash, sessions (which may include network addresses and user-agent details), OAuth client registrations and grants, and connection names, identifiers, credential hashes, expiration, revocation, and last-seen times. The username signup flow creates an internal placeholder email; it does not verify an email address and currently has no email password recovery. Keep your password in a password manager. Account and connection records remain until deletion is requested and verified through adan@logforge.dev; operational backups may retain earlier records until their backup is removed. There is currently no automatic backup retention deadline.
+
+The private relay makes outbound HTTPS connections. Your Central API key stays in protected configuration on its machine and is not sent to the hosted gateway. The gateway queues only allowlisted read-only requests for the authenticated account's linked relay. It cannot execute shell commands or install agents. Existing Central permissions and entitlements continue to apply.
+
+Requested tool results can include application logs, metrics, inventory, alerts, approved file reads, and reports with source excerpts and application data. Share project report directories explicitly. A remote request selects a shared project identifier, never an arbitrary local path. The gateway holds pending requests and results temporarily in memory and does not intentionally archive diagnostic payloads or log request bodies. The requesting Claude/ChatGPT service processes received results under its own account/workspace policies. This does not promise that all application logs are free of secrets; choose appropriate queries and sharing scope.
+
+HTTPS processing necessarily handles source network addresses. The gateway keeps short-lived rate-limit counters in memory; its authentication provider also stores authentication rate-limit identifiers and counters in its database. Access logging and authentication debug logging are disabled. Infrastructure providers may retain separate operational records.
+
+Stop or revoke a relay to prevent new reads; an in-flight response may already have reached its requester. Unshare a project to stop future report access. Revocation does not erase results already received by the requesting client. Contact adan@logforge.dev for account/data deletion or support, providing your username or connection identifier, never passwords, API keys, relay tokens, or unredacted diagnostic payloads.
+
+Optional publisher reporting remains off without explicit consent. Disabling it stops aggregate analytics; it does not disable the service processing required for a requested hosted query. Reporting identities and distribution labels are not verified Anthropic installation receipts.
